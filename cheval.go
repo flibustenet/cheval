@@ -8,8 +8,8 @@ i3 530 350ms
 import (
 	"fmt"
 	"sync"
+	"time"
 )
-import "time"
 
 const nbmove = 8
 
@@ -33,9 +33,7 @@ var nbsol = 0
 
 func main() {
 	t := time.Now()
-	for i := 0; i < 10; i++ {
-		start()
-	}
+	start()
 	fmt.Println(time.Since(t))
 }
 func start() {
@@ -52,7 +50,7 @@ func start() {
 	shift_6 = shift[6]
 	shift_7 = shift[7]
 	fmt.Println(shift)
-	fmt.Println("Search for side %d", SIDE)
+	fmt.Printf("%dx%d\n", SIDE, SIDE)
 	var wg sync.WaitGroup
 	for xs := 0; xs < SIDE; xs++ {
 		for ys := 0; ys < SIDE; ys++ {
