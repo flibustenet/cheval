@@ -7,6 +7,7 @@ i3 530 350ms
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -32,38 +33,51 @@ var nbcoup = 1
 var nbsol = 0
 
 func main() {
-	t := time.Now()
 	start()
-	fmt.Println(time.Since(t))
 }
 func start() {
-	tstart := time.Now()
-	for i := 0; i < 8; i++ {
-		shift[i] = movex[i]*SIDE + movey[i]
-	}
-	shift_0 = shift[0]
-	shift_1 = shift[1]
-	shift_2 = shift[2]
-	shift_3 = shift[3]
-	shift_4 = shift[4]
-	shift_5 = shift[5]
-	shift_6 = shift[6]
-	shift_7 = shift[7]
-	fmt.Println(shift)
-	fmt.Printf("%dx%d\n", SIDE, SIDE)
-	var wg sync.WaitGroup
-	for xs := 0; xs < SIDE; xs++ {
-		for ys := 0; ys < SIDE; ys++ {
-			wg.Add(1)
-			circuit := make([]int, SQR_SIDE)
-			go do_solve(&wg, circuit, 1, xs, ys)
+
+	for goroutines := false; ; goroutines = true {
+		nbsol = 0
+		nbcoup = 1
+		fmt.Printf("%dx%d\n", SIDE, SIDE)
+		if goroutines {
+			goroutines = true
+			fmt.Printf("Avec %d procs en goroutines\n", runtime.NumCPU())
+		} else {
+			fmt.Println("Sans goroutines")
+		}
+		tstart := time.Now()
+		for i := 0; i < 8; i++ {
+			shift[i] = movex[i]*SIDE + movey[i]
+		}
+		shift_0 = shift[0]
+		shift_1 = shift[1]
+		shift_2 = shift[2]
+		shift_3 = shift[3]
+		shift_4 = shift[4]
+		shift_5 = shift[5]
+		shift_6 = shift[6]
+		shift_7 = shift[7]
+		var wg sync.WaitGroup
+		for xs := 0; xs < SIDE; xs++ {
+			for ys := 0; ys < SIDE; ys++ {
+				wg.Add(1)
+				circuit := make([]int, SQR_SIDE)
+				if goroutines {
+					go do_solve(&wg, circuit, 1, xs, ys)
+				} else {
+					do_solve(&wg, circuit, 1, xs, ys)
+				}
+			}
+		}
+		wg.Wait()
+		duration := time.Since(tstart)
+		fmt.Printf("%s nbsol=%d\n", duration, nbsol)
+		if goroutines {
+			break
 		}
 	}
-	//circuit := make([]int,SQR_SIDE)
-	//solve(&wg,circuit,1,0,0)
-	wg.Wait()
-	duration := time.Since(tstart)
-	fmt.Printf("%s nbsol=%d\n", duration, nbsol)
 }
 
 func do_solve(wg *sync.WaitGroup, circuit []int, nb int, x int, y int) {
